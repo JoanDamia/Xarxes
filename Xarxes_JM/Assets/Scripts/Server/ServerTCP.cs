@@ -32,7 +32,7 @@ public class ServerTCP : MonoBehaviour
 
     public void startServer()
     {
-        serverText = "Starting TCP Server...";
+        serverText = "Starting TCP Server *bee bop bee bop*...";
 
         //TO DO 1
         //Create and bind the socket

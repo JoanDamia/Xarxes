@@ -43,7 +43,7 @@ public class ClientUDP : MonoBehaviour
         //Send the Handshake to the server's endpoint.
         //This time, our UDP socket doesn't have it, so we have to pass it
         //as a parameter on its SendTo() method
-        byte[] data = Encoding.ASCII.GetBytes("Hello World");
+        byte[] data = Encoding.ASCII.GetBytes("OMG");
         socket.SendTo(data, ipep);
 
         //TO DO 5

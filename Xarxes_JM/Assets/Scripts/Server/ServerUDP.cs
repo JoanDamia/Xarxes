@@ -20,7 +20,7 @@ public class ServerUDP : MonoBehaviour
 
     public void startServer()
     {
-        serverText = "Starting UDP Server...";
+        serverText = "Starting UDP Server *bee bop bee bop*...";
 
         //TO DO 1
         //UDP doesn't keep track of our connections like TCP

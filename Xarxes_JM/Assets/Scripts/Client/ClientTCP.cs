@@ -4,7 +4,6 @@ using System.Text;
 using UnityEngine;
 using System.Threading;
 using TMPro;
-using UnityEngine.tvOS;
 
 public class ClientTCP : MonoBehaviour
 {
@@ -17,14 +16,12 @@ public class ClientTCP : MonoBehaviour
     void Start()
     {
         UItext = UItextObj.GetComponent<TextMeshProUGUI>();
-
     }
 
     // Update is called once per frame
     void Update()
     {
         UItext.text = clientText;
-
     }
 
     public void StartClient()
@@ -32,6 +29,7 @@ public class ClientTCP : MonoBehaviour
         Thread connect = new Thread(Connect);
         connect.Start();
     }
+
     void Connect()
     {
         //TO DO 2
@@ -40,7 +38,6 @@ public class ClientTCP : MonoBehaviour
         //Also, initialize our server socket.
         //When calling connect and succeeding, our server socket will create a
         //connection between this endpoint and the server's endpoint
-
         IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         server.Connect(ipep);
@@ -55,14 +52,14 @@ public class ClientTCP : MonoBehaviour
         //If the client wants to receive messages, it will have to start another thread. Call Receive()
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
-
     }
+
     void Send()
     {
         //TO DO 4
         //Using the socket that stores the connection between the 2 endpoints, call the TCP send function with
         //an encoded message
-        string message = "Hello, Server!";
+        string message = "Haaalooooo everynyan, hawaryu fain sankiu";
         byte[] data = Encoding.ASCII.GetBytes(message);
         server.Send(data);
     }
@@ -75,5 +72,4 @@ public class ClientTCP : MonoBehaviour
         int recv = server.Receive(data);
         clientText = clientText + "\n" + Encoding.ASCII.GetString(data, 0, recv);
     }
-
 }
