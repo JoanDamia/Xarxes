@@ -4,61 +4,76 @@ using System.Text;
 using UnityEngine;
 using System.Threading;
 using TMPro;
+using UnityEngine.tvOS;
 
 public class ClientTCP : MonoBehaviour
 {
-    public GameObject UItextObj; // UI text object per mostrar missatges
-    TextMeshProUGUI UItext;      // Component de Text per actualitzar el text de la UI
-    string clientText;           // Text a mostrar en la UI
-    Socket server;               // Socket del servidor
+    public GameObject UItextObj;
+    TextMeshProUGUI UItext;
+    string clientText;
+    Socket server;
 
+    // Start is called before the first frame update
     void Start()
     {
         UItext = UItextObj.GetComponent<TextMeshProUGUI>();
+
     }
 
+    // Update is called once per frame
     void Update()
     {
-        // Actualitzar el text de la UI amb els missatges rebuts
         UItext.text = clientText;
+
     }
 
     public void StartClient()
     {
-        // Crear un fil per connectar al servidor
         Thread connect = new Thread(Connect);
         connect.Start();
     }
-
     void Connect()
     {
-        // TO DO 2 - Creant el socket i connectant amb el servidor
+        //TO DO 2
+        //Create the server endpoint so we can try to connect to it.
+        //You'll need the server's IP and the port we binded it to before
+        //Also, initialize our server socket.
+        //When calling connect and succeeding, our server socket will create a
+        //connection between this endpoint and the server's endpoint
+
         IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
         server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        server.Connect(ipep);  // Connectar al servidor
+        server.Connect(ipep);
 
-        // TO DO 4 - Enviant el missatge al servidor
+        //TO DO 4
+        //With an established connection, we want to send a message so the server acknowledges us
+        //Start the Send Thread
         Thread sendThread = new Thread(Send);
         sendThread.Start();
 
-        // TO DO 7 - Iniciant la recepció del missatge
+        //TO DO 7
+        //If the client wants to receive messages, it will have to start another thread. Call Receive()
         Thread receiveThread = new Thread(Receive);
         receiveThread.Start();
-    }
 
+    }
     void Send()
     {
-        // TO DO 4 - Enviant un missatge codificat
-        string message = "Hello, server!";
+        //TO DO 4
+        //Using the socket that stores the connection between the 2 endpoints, call the TCP send function with
+        //an encoded message
+        string message = "Hello, Server!";
         byte[] data = Encoding.ASCII.GetBytes(message);
-        server.Send(data);  // Enviar el missatge al servidor
+        server.Send(data);
     }
 
+    //TO DO 7
+    //Similar to what we already did with the server, we have to call the Receive() method from the socket.
     void Receive()
     {
-        // TO DO 7 - Rebent el missatge del servidor
         byte[] data = new byte[1024];
-        int recv = server.Receive(data);  // Rebre dades del servidor
-        clientText = Encoding.ASCII.GetString(data, 0, recv);  // Convertir les dades rebudes en text
+        int recv = server.Receive(data);
+        clientText = clientText + "\n" + Encoding.ASCII.GetString(data, 0, recv);
     }
+
 }

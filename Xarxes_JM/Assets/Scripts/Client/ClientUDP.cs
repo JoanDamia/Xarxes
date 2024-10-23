@@ -7,53 +7,63 @@ using TMPro;
 
 public class ClientUDP : MonoBehaviour
 {
-    Socket socket;               // Socket UDP del client
-    public GameObject UItextObj;  // UI per mostrar missatges
-    TextMeshProUGUI UItext;       // Text per actualitzar la UI
-    string clientText;            // Text a mostrar en la UI
+    Socket socket;
+    public GameObject UItextObj;
+    TextMeshProUGUI UItext;
+    string clientText;
 
+    // Start is called before the first frame update
     void Start()
     {
         UItext = UItextObj.GetComponent<TextMeshProUGUI>();
-    }
 
+    }
     public void StartClient()
     {
-        // Crear un fil per enviar el missatge
         Thread mainThread = new Thread(Send);
         mainThread.Start();
     }
 
     void Update()
     {
-        // Actualitzar el text de la UI
         UItext.text = clientText;
     }
 
     void Send()
     {
-        // TO DO 2 - Creant i associant el socket
+        //TO DO 2
+        //Unlike with TCP, we don't "connect" first,
+        //we are going to send a message to establish our communication so we need an endpoint
+        //We need the server's IP and the port we've binded it to before
+        //Again, initialize the socket
         IPEndPoint ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9050);
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
-        // TO DO 2.1 - Enviant handshake
-        string handshake = "Hello UDP Server";
-        byte[] data = Encoding.ASCII.GetBytes(handshake);
-        socket.SendTo(data, ipep);  // Enviar el handshake
+        //TO DO 2.1 
+        //Send the Handshake to the server's endpoint.
+        //This time, our UDP socket doesn't have it, so we have to pass it
+        //as a parameter on its SendTo() method
+        byte[] data = Encoding.ASCII.GetBytes("Hello World");
+        socket.SendTo(data, ipep);
 
-        // TO DO 5 - Iniciant la recepció del missatge
-        Thread receiveThread = new Thread(Receive);
-        receiveThread.Start();
+        //TO DO 5
+        //We'll wait for a server response,
+        //so you can already start the receive thread
+        Thread receive = new Thread(Receive);
+        receive.Start();
     }
 
+    //TO DO 5
+    //Same as in the server, in this case the remote is a bit useless
+    //since we already know it's the server who's communicating with us
     void Receive()
     {
-        byte[] data = new byte[1024];
         IPEndPoint sender = new IPEndPoint(IPAddress.Any, 0);
         EndPoint Remote = (EndPoint)sender;
-
-        // Rebent la resposta del servidor
+        byte[] data = new byte[1024];
         int recv = socket.ReceiveFrom(data, ref Remote);
-        clientText = Encoding.ASCII.GetString(data, 0, recv);
+
+        clientText = $"Message received from {Remote.ToString()}:";
+        clientText += "\n" + Encoding.ASCII.GetString(data, 0, recv);
     }
 }

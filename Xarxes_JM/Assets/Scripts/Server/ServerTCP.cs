@@ -7,16 +7,17 @@ using System.Text;
 
 public class ServerTCP : MonoBehaviour
 {
-    Socket socket;               // Socket del servidor
-    Thread mainThread = null;     // Fil principal per acceptar connexions
-    public GameObject UItextObj;  // Objecte UI per mostrar missatges
-    TextMeshProUGUI UItext;       // Component de Text per mostrar el text de la UI
-    string serverText;            // Text a mostrar en la UI
+    Socket socket;
+    Thread mainThread = null;
+
+    public GameObject UItextObj;
+    TextMeshProUGUI UItext;
+    string serverText;
 
     public struct User
     {
-        public string name;       // Nom del client
-        public Socket socket;     // Socket del client
+        public string name;
+        public Socket socket;
     }
 
     void Start()
@@ -26,21 +27,24 @@ public class ServerTCP : MonoBehaviour
 
     void Update()
     {
-        // Actualitzar el text de la UI
         UItext.text = serverText;
     }
 
-    public void StartServer()
+    public void startServer()
     {
-        // TO DO 1 - Crear i associar el socket
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
-        socket.Bind(ipep);  // Associar el socket a l'adreça i port
-        socket.Listen(10);  // Posar el socket en mode d'escolta
-
         serverText = "Starting TCP Server...";
 
-        // TO DO 3 - Comprovant noves connexions
+        //TO DO 1
+        //Create and bind the socket
+        //Any IP that wants to connect to the port 9050 with TCP, will communicate with this socket
+        //Don't forget to set the socket in listening mode
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        IPEndPoint ipep = new IPEndPoint(IPAddress.Any, 9050);
+        socket.Bind(ipep);
+        socket.Listen(10);
+
+        //TO DO 3
+        //Time to check for connections, start a thread using CheckNewConnections
         mainThread = new Thread(CheckNewConnections);
         mainThread.Start();
     }
@@ -49,39 +53,69 @@ public class ServerTCP : MonoBehaviour
     {
         while (true)
         {
-            // Acceptar un nou client
             User newUser = new User();
             newUser.name = "";
+
+            //TO DO 3
+            //TCP makes it so easy to manage connections, so we are going
+            //to put it to use
+            //Accept any incoming clients and store them in this user.
+            //When accepting, we can now store a copy of our server socket
+            //who has established a communication between a
+            //local endpoint (server) and the remote endpoint (client)
+            //If you want to check their ports and addresses, you can access
+            //the socket's RemoteEndPoint and LocalEndPoint
+            //try printing them on the console
             newUser.socket = socket.Accept();
 
-            // TO DO 5 - Iniciant el fil de recepció de missatges
+            IPEndPoint clientep = (IPEndPoint)newUser.socket.RemoteEndPoint;
+            serverText = serverText + "\n" + "Connected with " + clientep.Address.ToString() + " at port " + clientep.Port.ToString();
+
+            //TO DO 5
+            //For every client, we call a new thread to receive their messages. 
+            //Here we have to send our user as a parameter so we can use its socket.
             Thread newConnection = new Thread(() => Receive(newUser));
             newConnection.Start();
         }
+        //These users could be stored in the future on a list
+        //in case you want to manage your connections
     }
 
     void Receive(User user)
     {
+        //TO DO 5
+        //Create an infinite loop to start receiving messages for this user
+        //You'll have to use the socket function receive to be able to get them.
         byte[] data = new byte[1024];
+        int recv = 0;
+
         while (true)
         {
-            // Rebre missatges del client
-            int recv = user.socket.Receive(data);
-            if (recv == 0) break;
+            data = new byte[1024];
+            recv = user.socket.Receive(data);
 
-            string message = Encoding.ASCII.GetString(data, 0, recv);
-            serverText += "\n" + message;
+            if (recv == 0)
+                break;
+            else
+            {
+                serverText = serverText + "\n" + Encoding.ASCII.GetString(data, 0, recv);
+            }
 
-            // TO DO 6 - Enviant resposta "ping"
-            Send(user);  // Enviem el ping dins del mateix fil
+            //TO DO 6
+            //We'll send a ping back every time a message is received
+            //Start another thread to send a message, same parameters as this one.
+            Thread answer = new Thread(() => Send(user));
+            answer.Start();
         }
     }
 
+    //TO DO 6
+    //Now, we'll use this user socket to send a "ping".
+    //Just call the socket's send function and encode the string.
     void Send(User user)
     {
-        // Enviar un "ping" al client
-        string pingMessage = "ping";
-        byte[] data = Encoding.ASCII.GetBytes(pingMessage);
+        string message = "Ping";
+        byte[] data = Encoding.ASCII.GetBytes(message);
         user.socket.Send(data);
     }
 }
